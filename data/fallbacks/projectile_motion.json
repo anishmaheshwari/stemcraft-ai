@@ -1,0 +1,58 @@
+{
+  "sessionId": "demo-projectile-motion",
+  "topic": "Projectile Motion",
+  "category": "physics",
+  "templateId": "projectile_motion",
+  "confidence": 1,
+  "explanation": {
+    "hook": "A ball thrown at an angle follows a curved path shaped by gravity and initial velocity.",
+    "keyIdeas": [
+      "Horizontal velocity stays constant",
+      "Gravity accelerates downward",
+      "Angle and speed set the trajectory"
+    ],
+    "analogy": "Throwing a paper airplane — aim higher for more airtime, faster for more distance."
+  },
+  "simulation": {
+    "config": {
+      "velocity": 25,
+      "angle": 45,
+      "gravity": 9.8,
+      "scenarios": [
+        { "label": "45° max range", "velocity": 25, "angle": 45 },
+        { "label": "High arc", "velocity": 20, "angle": 70 }
+      ]
+    }
+  },
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "question": "Which force primarily shapes a projectile's path?",
+        "options": ["Magnetism", "Gravity", "Friction only", "Buoyancy"],
+        "correctIndex": 1,
+        "explanation": "Gravity pulls the projectile downward continuously."
+      },
+      {
+        "id": "q2",
+        "question": "At 45° (no air resistance), what is maximized?",
+        "options": ["Max height only", "Time in air only", "Horizontal range", "Initial speed"],
+        "correctIndex": 2,
+        "explanation": "45° gives the best balance of horizontal and vertical components."
+      },
+      {
+        "id": "q3",
+        "question": "What happens to horizontal velocity (ideal case)?",
+        "options": ["Increases constantly", "Stays constant", "Becomes zero at peak", "Reverses direction"],
+        "correctIndex": 1,
+        "explanation": "With no air resistance, horizontal velocity is unchanged."
+      }
+    ]
+  },
+  "challenge": {
+    "title": "Peak height",
+    "description": "At 25 m/s and 45°, roughly how many seconds until the ball lands? (nearest whole number)",
+    "hint": "Total flight time ≈ 2 × (v·sinθ / g)",
+    "validation": { "type": "number", "answer": 4 }
+  }
+}

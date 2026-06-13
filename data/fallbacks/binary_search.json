@@ -1,0 +1,78 @@
+{
+  "sessionId": "demo-binary-search",
+  "topic": "Binary Search",
+  "category": "cs",
+  "templateId": "binary_search",
+  "confidence": 1,
+  "explanation": {
+    "hook": "Finding a name in a sorted phone book — open to the middle, then eliminate half each time.",
+    "keyIdeas": [
+      "Requires a sorted collection",
+      "Compare against the midpoint each step",
+      "Eliminate half the search space"
+    ],
+    "analogy": "Like guessing a number: 'Higher or lower?' after each guess."
+  },
+  "simulation": {
+    "config": {
+      "sortedArray": [2, 5, 8, 12, 16, 23, 38, 56, 72, 91],
+      "target": 23,
+      "steps": [
+        {
+          "low": 0,
+          "high": 9,
+          "mid": 4,
+          "midValue": 16,
+          "comparison": "greater",
+          "eliminated": "left"
+        },
+        {
+          "low": 5,
+          "high": 9,
+          "mid": 7,
+          "midValue": 56,
+          "comparison": "less",
+          "eliminated": "right"
+        },
+        {
+          "low": 5,
+          "high": 6,
+          "mid": 5,
+          "midValue": 23,
+          "comparison": "found"
+        }
+      ]
+    }
+  },
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "question": "What is the time complexity of binary search?",
+        "options": ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+        "correctIndex": 1,
+        "explanation": "Each step halves the search space."
+      },
+      {
+        "id": "q2",
+        "question": "What precondition does binary search require?",
+        "options": ["Random data", "Sorted data", "Unique values only", "Even array length"],
+        "correctIndex": 1,
+        "explanation": "The array must be sorted to eliminate halves correctly."
+      },
+      {
+        "id": "q3",
+        "question": "After comparing with the midpoint, what happens?",
+        "options": ["Scan linearly", "Eliminate half the range", "Restart from index 0", "Shuffle the array"],
+        "correctIndex": 1,
+        "explanation": "You discard the half that cannot contain the target."
+      }
+    ]
+  },
+  "challenge": {
+    "title": "Find the midpoint",
+    "description": "Array indices 0–9. What is the first midpoint index?",
+    "hint": "mid = floor((low + high) / 2)",
+    "validation": { "type": "number", "answer": 4 }
+  }
+}

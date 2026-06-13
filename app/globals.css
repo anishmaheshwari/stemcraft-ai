@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 5% 14%;
+    --accent-foreground: 0 0% 98%;
+    --border: 240 5% 17%;
+    --input: 240 5% 17%;
+    --ring: 160 84% 39%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(160 84% 39% / 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, hsl(263 70% 50% / 0.05), transparent);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glow-cs {
+    box-shadow: 0 0 40px -10px hsl(160 84% 39% / 0.35);
+  }
+
+  .glow-physics {
+    box-shadow: 0 0 40px -10px hsl(199 89% 48% / 0.35);
+  }
+
+  .glow-dns {
+    box-shadow: 0 0 40px -10px hsl(263 70% 50% / 0.35);
+  }
+
+  .glow-ai {
+    box-shadow: 0 0 40px -10px hsl(140 85% 65% / 0.35);
+  }
+
+  .hero-deco {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .hero-deco::before,
+  .hero-deco::after {
+    content: "";
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(72px);
+    opacity: 0.7;
+  }
+
+  .hero-deco::before {
+    width: 24rem;
+    height: 24rem;
+    background: radial-gradient(circle, rgba(52,211,153,0.22), transparent 60%);
+    top: -6rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hero-deco::after {
+    width: 18rem;
+    height: 18rem;
+    background: radial-gradient(circle, rgba(96,165,250,0.18), transparent 60%);
+    bottom: -4rem;
+    right: 10%;
+  }
+}

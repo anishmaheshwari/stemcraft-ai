@@ -1,0 +1,95 @@
+{
+  "sessionId": "demo-dns-resolution",
+  "topic": "DNS Resolution",
+  "category": "cs",
+  "templateId": "dns_resolution",
+  "confidence": 1,
+  "explanation": {
+    "hook": "When you type a URL, your browser asks a chain of DNS servers to translate the name into an IP address.",
+    "keyIdeas": [
+      "Recursive resolver does the legwork",
+      "Root server points to TLD servers",
+      "Authoritative server returns the final IP"
+    ],
+    "analogy": "Like asking directions: local guide → city directory → neighborhood expert."
+  },
+  "simulation": {
+    "config": {
+      "domain": "stemcraft.dev",
+      "resolvedIp": "93.184.216.34",
+      "steps": [
+        {
+          "stepNumber": 1,
+          "from": "browser",
+          "to": "resolver",
+          "query": "What is the IP for stemcraft.dev?",
+          "response": "I'll look that up for you.",
+          "type": "query"
+        },
+        {
+          "stepNumber": 2,
+          "from": "resolver",
+          "to": "root",
+          "query": "Where is .dev TLD?",
+          "response": "Ask the .dev TLD server.",
+          "type": "query"
+        },
+        {
+          "stepNumber": 3,
+          "from": "resolver",
+          "to": "tld",
+          "query": "Who is authoritative for stemcraft.dev?",
+          "response": "Ask the stemcraft.dev nameserver.",
+          "type": "query"
+        },
+        {
+          "stepNumber": 4,
+          "from": "resolver",
+          "to": "authoritative",
+          "query": "A record for stemcraft.dev?",
+          "response": "93.184.216.34",
+          "type": "query"
+        },
+        {
+          "stepNumber": 5,
+          "from": "resolver",
+          "to": "browser",
+          "query": "stemcraft.dev → 93.184.216.34",
+          "response": "Cached for future lookups.",
+          "type": "response"
+        }
+      ]
+    }
+  },
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "question": "What does DNS translate?",
+        "options": ["IP to MAC", "Domain names to IP addresses", "Ports to protocols", "Files to URLs"],
+        "correctIndex": 1,
+        "explanation": "DNS maps human-readable domain names to IP addresses."
+      },
+      {
+        "id": "q2",
+        "question": "Which server knows the final IP for a domain?",
+        "options": ["Root DNS", "TLD server", "Authoritative server", "Browser cache only"],
+        "correctIndex": 2,
+        "explanation": "The authoritative nameserver holds the actual DNS records."
+      },
+      {
+        "id": "q3",
+        "question": "What does a recursive resolver do?",
+        "options": ["Hosts websites", "Follows the full lookup chain for the client", "Replaces HTTPS", "Encrypts DNS traffic"],
+        "correctIndex": 1,
+        "explanation": "The resolver queries other servers until it gets the answer."
+      }
+    ]
+  },
+  "challenge": {
+    "title": "Name the first hop",
+    "description": "After the browser, which component receives the first DNS query?",
+    "hint": "Your ISP or OS usually configures this.",
+    "validation": { "type": "text", "answer": "resolver" }
+  }
+}
