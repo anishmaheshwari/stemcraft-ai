@@ -197,17 +197,7 @@ npm start
 
 ---
 
-## 📸 Screenshots
 
-| Homepage | AI Lesson |
-|---|---|
-| *Hero with topic input and demo cards* | *Structured AI-generated lesson with key concepts* |
-
-| Interactive Simulation | Quiz & Insights |
-|---|---|
-| *Step-through visual simulation (e.g. Binary Search trace)* | *Adaptive quiz with personalized learning tips* |
-
----
 
 ## 🗂️ Project Structure
 
