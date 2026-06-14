@@ -206,17 +206,41 @@ export async function POST(request: Request) {
     const result = await generateLesson(inferred.templateId, topic);
 
     if (!result.ok) {
-      logWarn("generate", "Gemini generation failed — static fallback", {
+      logWarn("generate", "Gemini generation failed", {
         templateId: inferred.templateId,
         reason: result.reason,
         error: result.error,
         durationMs: result.durationMs,
       });
-      return buildStaticResponse(
-        inferred.templateId,
-        topic,
-        `gemini_${result.reason}`,
-        startMs
+
+      // For simulation templates (binary_search, dns_resolution, projectile_motion),
+      // fall back to static demo data — these are always coherent even with a different topic.
+      if (inferred.templateId !== "ai_lesson") {
+        return buildStaticResponse(
+          inferred.templateId,
+          topic,
+          `gemini_${result.reason}`,
+          startMs
+        );
+      }
+
+      // For ai_lesson (open-ended topics like "AWS EC2"), a generic static fallback is
+      // useless and confusing. Tell the client what actually went wrong.
+      const userMessage =
+        result.reason === "timeout"
+          ? `The AI took too long to generate a lesson for "${topic}". Please try again — it usually works on retry.`
+          : result.reason === "quota_exceeded"
+          ? "The AI service is temporarily rate-limited. Please wait a moment and try again."
+          : `The AI couldn't generate a lesson for "${topic}" right now. Please try again.`;
+
+      return NextResponse.json(
+        {
+          error: "ai_generation_failed",
+          reason: result.reason,
+          userMessage,
+          topic,
+        },
+        { status: 503 }
       );
     }
 
@@ -244,12 +268,20 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown API error";
-    logError("generate", "Unhandled error — static fallback", { error: message });
-    return buildStaticResponse(
-      inferred.templateId,
-      topic,
-      "unhandled_error",
-      startMs
+    logError("generate", "Unhandled error", { error: message });
+
+    if (inferred.templateId !== "ai_lesson") {
+      return buildStaticResponse(inferred.templateId, topic, "unhandled_error", startMs);
+    }
+
+    return NextResponse.json(
+      {
+        error: "ai_generation_failed",
+        reason: "api_error",
+        userMessage: `Something went wrong while generating the lesson for "${topic}". Please try again.`,
+        topic,
+      },
+      { status: 503 }
     );
   }
 }

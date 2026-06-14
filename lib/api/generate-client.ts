@@ -20,6 +20,24 @@ export interface UnsupportedTopicErrorData {
   suggestedTopics: DemoTopic[];
 }
 
+export interface AiGenerationFailedError {
+  name: "AiGenerationFailedError";
+  message: string;
+  reason: string;
+  topic: string;
+}
+
+export function isAiGenerationFailedError(
+  err: unknown
+): err is AiGenerationFailedError {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    (err as { name: string }).name === "AiGenerationFailedError"
+  );
+}
+
 export function isUnsupportedTopicError(
   err: unknown
 ): err is UnsupportedTopicErrorData {
@@ -52,8 +70,25 @@ export async function requestExperience(
   const data = (await response.json()) as GenerateResponse & {
     error?: string;
     message?: string;
+    userMessage?: string;
+    reason?: string;
+    topic?: string;
     suggestedTopics?: DemoTopic[];
   };
+
+  if (response.status === 503 && data.error === "ai_generation_failed") {
+    console.warn("[STEMCraft][client] ai generation failed", {
+      topic,
+      reason: data.reason,
+      clientDurationMs: Date.now() - start,
+    });
+    throw {
+      name: "AiGenerationFailedError",
+      message: data.userMessage ?? `The AI couldn't generate a lesson for "${topic}". Please try again.`,
+      reason: data.reason ?? "unknown",
+      topic: data.topic ?? topic,
+    } satisfies AiGenerationFailedError;
+  }
 
   if (response.status === 422 && data.error === "unsupported_topic") {
     console.warn("[STEMCraft][client] unsupported topic", {

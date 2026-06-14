@@ -7,6 +7,7 @@ import { LoadingExperience } from "@/components/shared/LoadingExperience";
 import { PageTransition } from "@/components/shared/PageTransition";
 import {
   isUnsupportedTopicError,
+  isAiGenerationFailedError,
   requestExperience,
 } from "@/lib/api/generate-client";
 import { DEMO_TOPICS, getStaticFallback } from "@/lib/fallbacks";
@@ -19,6 +20,7 @@ export default function HomePage() {
   const [unsupportedMessage, setUnsupportedMessage] = useState<string | null>(
     null
   );
+  const [aiError, setAiError] = useState<{ message: string; reason: string; topic: string } | null>(null);
   const [suggestedTopics, setSuggestedTopics] =
     useState<DemoTopic[]>(DEMO_TOPICS);
 
@@ -43,6 +45,7 @@ export default function HomePage() {
   async function handleGenerate(topic: string, category: Category | null) {
     setIsLoading(true);
     setUnsupportedMessage(null);
+    setAiError(null);
 
     try {
       const { payload, meta } = await requestExperience(topic, category);
@@ -51,8 +54,25 @@ export default function HomePage() {
         source: meta.source,
         templateId: meta.templateId,
       });
-      navigateWithPayload(payload, meta);
+      // Save session FIRST (populates memory cache), then push.
+      // Do NOT reset isLoading here — keep the loading screen visible
+      // during the router.push() navigation transition. The learn page
+      // will render with the payload already in the memory cache so it
+      // never shows a second loading state.
+      saveSession(payload, meta);
+      router.push(`/learn/${payload.sessionId}`);
+      // isLoading intentionally left as true — component unmounts on navigation
     } catch (err) {
+      if (isAiGenerationFailedError(err)) {
+        console.warn("[STEMCraft][client] ai generation failed", {
+          topic,
+          reason: err.reason,
+        });
+        setAiError({ message: err.message, reason: err.reason, topic: err.topic });
+        setIsLoading(false);
+        return;
+      }
+
       if (isUnsupportedTopicError(err)) {
         console.warn("[STEMCraft][client] topic not in MVP scope", {
           topic,
@@ -60,16 +80,18 @@ export default function HomePage() {
         });
         setUnsupportedMessage(err.message);
         setSuggestedTopics(err.suggestedTopics);
+        setIsLoading(false);
         return;
       }
 
       const message = err instanceof Error ? err.message : "Generate failed";
       console.error("[STEMCraft][client] generate failed", { error: message });
-      setUnsupportedMessage(
-        "Something went wrong while generating your lesson. Please try a demo topic below."
-      );
+      setAiError({
+        message: "Something went wrong. Please try again.",
+        reason: "unknown",
+        topic,
+      });
       setSuggestedTopics(DEMO_TOPICS);
-    } finally {
       setIsLoading(false);
     }
   }
@@ -85,8 +107,12 @@ export default function HomePage() {
             onDemoSelect={handleDemoSelect}
             isLoading={isLoading}
             unsupportedMessage={unsupportedMessage}
+            aiError={aiError}
             suggestedTopics={suggestedTopics}
-            onDismissUnsupported={() => setUnsupportedMessage(null)}
+            onDismissUnsupported={() => {
+              setUnsupportedMessage(null);
+              setAiError(null);
+            }}
           />
         )}
       </main>

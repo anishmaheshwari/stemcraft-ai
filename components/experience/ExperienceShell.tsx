@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Brain, Zap } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -11,6 +11,7 @@ import { ProgressBar } from "@/components/experience/ProgressBar";
 import { QuizPanel } from "@/components/experience/QuizPanel";
 import { SimulationPanel } from "@/components/experience/SimulationPanel";
 import { LessonShell } from "@/components/experience/LessonShell";
+import { LearningJourney } from "@/components/experience/LearningJourney";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,8 +41,6 @@ export function ExperienceShell({
     () => slugifyTopic(payload.topic),
     [payload.topic]
   );
-
-  // Always initialize hooks; rendering for ai_lesson is handled later.
 
   const [activeTab, setActiveTab] = useState("simulate");
   const [currentStep, setCurrentStep] = useState(0);
@@ -91,6 +90,14 @@ export function ExperienceShell({
     quizScore
   );
 
+  // Derive journey stage from progress
+  const journeyStage = useMemo(() => {
+    if (quizScore !== null) return "master";
+    if (simulationComplete) return "practice";
+    if (currentStep > 0) return "visualize";
+    return "understand";
+  }, [quizScore, simulationComplete, currentStep]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuizComplete = useCallback(
     (score: number, answers: Record<string, number>) => {
@@ -103,7 +110,6 @@ export function ExperienceShell({
 
       try {
         const quizResults = Object.entries(answers).map(([questionId]) => ({ questionId, correct: false, question: undefined }));
-          // Attempt to map correctness by comparing to payload.quiz.questions if available
           const detailed = quizResults.map((r) => {
             const questions = payload.quiz?.questions;
             if (!questions) return r;
@@ -125,6 +131,13 @@ export function ExperienceShell({
       : payload.category === "cs"
         ? "cs"
         : "physics";
+
+  // Category color scheme
+  const categoryColor = payload.templateId === "dns_resolution"
+    ? "hsl(263 70% 60%)"
+    : payload.category === "cs"
+      ? "hsl(160 84% 39%)"
+      : "hsl(199 89% 48%)";
 
   // Render LessonShell for AI-generated lessons (non-simulation topics)
   if (payload.templateId === "ai_lesson") {
@@ -154,22 +167,19 @@ export function ExperienceShell({
     />
   );
 
-  // derive mission text from payload
   const mission = (() => {
     if (payload.templateId === "binary_search") {
       const config = payload.simulation!.config as { target: number };
-      const target = config.target;
       return {
-        title: `Find target value ${target}`,
-        objective: `Locate the target value ${target} using binary search.`,
+        title: `Find target value ${config.target}`,
+        objective: `Locate the target value ${config.target} using binary search.`,
       };
     }
     if (payload.templateId === "dns_resolution") {
       const config = payload.simulation!.config as { domain: string };
-      const domain = config.domain;
       return {
-        title: `Resolve ${domain}`,
-        objective: `Trace the DNS lookup process and discover the final IP for ${domain}.`,
+        title: `Resolve ${config.domain}`,
+        objective: `Trace the DNS lookup process and discover the final IP for ${config.domain}.`,
       };
     }
     if (payload.templateId === "projectile_motion") {
@@ -194,73 +204,117 @@ export function ExperienceShell({
 
   return (
     <InsightsProvider>
-      <PageTransition className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:py-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            aria-label="Back to home"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold sm:text-xl">
-                {payload.topic}
-              </h1>
-              <Badge variant={badgeVariant}>
-                {payload.category === "cs" ? "CS" : "Physics"}
-              </Badge>
+      <PageTransition className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-5 px-4 py-5 sm:py-6">
+
+        {/* ── Premium WOW Header ── */}
+        <motion.header
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="rounded-2xl border border-white/8 bg-secondary/30 p-4 backdrop-blur-sm"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                aria-label="Back to home"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 text-muted-foreground transition-all hover:border-white/20 hover:bg-secondary hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+
+              <div className="min-w-0">
+                {/* AI Generated label */}
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-primary">
+                    <Brain className="h-2.5 w-2.5" />
+                    AI Generated
+                  </span>
+                  {generationMeta?.source !== "static" && (
+                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Zap className="h-2.5 w-2.5 text-amber-400" />
+                      Live
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <h1 className="truncate text-base font-semibold sm:text-lg">
+                    {payload.topic}
+                  </h1>
+                  <Badge variant={badgeVariant}>
+                    {payload.category === "cs" ? "CS" : "Physics"}
+                  </Badge>
+                </div>
+
+                {/* Confidence score */}
+                {payload.confidence != null && (
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <div className="h-1 w-20 rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${Math.round(payload.confidence * 100)}%`,
+                          background: categoryColor,
+                          boxShadow: `0 0 6px ${categoryColor}`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">
+                      {Math.round(payload.confidence * 100)}% match
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ProgressBar value={progressValue} />
+            </div>
+          </div>
+        </motion.header>
+
+        {generationMeta?.source === "static" && (
+          <AiFallbackBanner reason={generationMeta.reason} />
+        )}
+
+        {/* ── Learning Journey Roadmap ── */}
+        <LearningJourney activeStage={journeyStage} />
+
+        {/* ── Desktop Layout ── */}
+        <div className="hidden gap-5 lg:grid lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.1 }}
+            >
+              {simulatePanel}
+            </motion.div>
+          </div>
+
+          <div className="lg:col-span-2 space-y-4">
+            <MissionCard title={mission.title} objective={mission.objective} />
+            <StepNarration templateId={payload.templateId} config={payload.simulation!.config} stepIndex={currentStep} />
+            <div className="space-y-4">
+              {explainPanel}
+              {quizPanel}
+              <InsightsPanel topicKey={topicKey} />
             </div>
           </div>
         </div>
-        <ProgressBar value={progressValue} />
-      </header>
 
-      {generationMeta?.source === "static" && (
-        <AiFallbackBanner reason={generationMeta.reason} />
-      )}
-
-      <div className="hidden gap-6 lg:grid lg:grid-cols-5">
-        <div className="lg:col-span-3">
-          {/* Large simulation area */}
-          <div className="h-full flex flex-col gap-4">
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-              {simulatePanel}
-            </motion.div>
-            <div className="mt-4 lg:hidden">{explainPanel}</div>
-          </div>
+        {/* ── Mobile Layout ── */}
+        <div className="lg:hidden">
+          <PanelTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            explain={explainPanel}
+            simulate={simulatePanel}
+            quiz={quizPanel}
+          />
         </div>
-        <div className="lg:col-span-2 space-y-4">
-          {/* Right column: Mission, narration, explanation, quiz, insights */}
-          {/* Mission */}
-          {/* Step narration */}
-          {/* Explanation */}
-          {/* Quiz */}
-          {/* InsightsPanel */}
-          
-          <MissionCard title={mission.title} objective={mission.objective} />
 
-          <StepNarration templateId={payload.templateId} config={payload.simulation!.config} stepIndex={currentStep} />
-
-          <div className="space-y-4">
-            {explainPanel}
-            {quizPanel}
-            <InsightsPanel topicKey={topicKey} />
-          </div>
-        </div>
-      </div>
-
-      <div className="lg:hidden">
-        <PanelTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          explain={explainPanel}
-          simulate={simulatePanel}
-          quiz={quizPanel}
-        />
-      </div>
       </PageTransition>
     </InsightsProvider>
   );

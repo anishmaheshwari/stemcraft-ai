@@ -37,7 +37,8 @@ import {
 import { getGeminiModel } from "@/lib/ai/model";
 import type { TemplateId } from "@/lib/types";
 
-const TIMEOUT_MS = 25000;
+// ai_lesson can be complex for Gemini — give it enough time.
+const TIMEOUT_MS = 45000;
 
 export type GeminiGenerateResult =
   | { ok: true; data: GeminiLessonOutput; durationMs: number; attempt: number }
