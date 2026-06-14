@@ -12,7 +12,7 @@
 
 *Built for **DSH Hacks V1** · Theme: AI × STEM Education*
 
-[🌐 Live Demo](#getting-started) · [🎯 Features](#-features) · [🏗️ Architecture](#-architecture) · [🚀 Getting Started](#-getting-started)
+[🌐 Live Demo](https://stemcraft-ai.vercel.app/) · [🎯 Features](#-features) · [🏗️ Architecture](#-architecture) · [🚀 Getting Started](#-getting-started)
 
 ---
 
